@@ -7,20 +7,29 @@
     <script src="vendor/bootstrap/js/bootstrap.js"></script>
     <script src="js/discover.js"></script>
     <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.css" />
+    <style>
+      .push {
+        height: 50px;
+      }
+    </style>
   </head>
   
   <body>
     <div class="container text-center">
+      
+      <div class="push"></div>
       <img src="img/header_logo.jpg" class="img-rounded" />
+      <div class="push"></div>
+      
       <div ng-controller="DiscoverCtrl">
         <form ng-submit="discover()" class="form-search">
           <div class="input-append">
-            <input type="text" ng-model="tipProject" placeholder="https://github.com/djui/tipesso" class="span4 search-query" />
-            <input type="submit" value="Discover" class="btn btn-primary" />
+            <input type="text" ng-model="tipProject" placeholder="https://github.com/djui/tipesso" class="search-query input-xlarge" />
+            <input type="submit" value="Discover" class="btn btn-success" />
           </div>
         </form>
-        <h1>{{tipProject}}</h1>
       </div>
+      
     </div>
   </body>
 </html>
