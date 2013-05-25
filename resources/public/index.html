@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en" ng-app>
+  <head>
+    <title>Tipesso</title>
+    <script src="vendor/jquery-2.0.1.js"></script>
+    <script src="vendor/angular.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.js"></script>
+    <script src="js/discover.js"></script>
+    <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.css" />
+  </head>
+  
+  <body>
+    <div class="container">
+      <div ng-controller="DiscoverCtrl">
+        <form ng-submit="discover()" class="form-search">
+          <div class="input-append">
+            <input type="text" ng-model="tipProject" placeholder="https://github.com/djui/tipesso" class="span4 search-query" />
+            <input type="submit" value="Discover" class="btn btn-primary" />
+          </div>
+        </form>
+        <h1>{{tipProject}}</h1>
+      </div>
+    </div>
+  </body>
+</html>
