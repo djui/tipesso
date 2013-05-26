@@ -2,10 +2,6 @@
   (:use compojure.core)
   (:require [compojure.handler :as handler]
             [compojure.route :as route]
-            [hiccup.def :only (defhtml)]
-            [hiccup.core :only (html)]
-            [hiccup.page :only (html5 include-js include-css)]
-            [hiccup.element :only (link-to)]
             [tipesso.discoverer :as discoverer]
             [ring.util.response :as response]))
 
