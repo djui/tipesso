@@ -1,4 +1,4 @@
-(ns tipesso.test.handler
+(ns tipesso.handler-test
   (:use clojure.java.io
         clojure.test
         ring.mock.request  
