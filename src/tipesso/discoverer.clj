@@ -1,7 +1,7 @@
 (ns tipesso.discoverer
-  :require [clojure.string :only trim]
-           [tentacles.repos :as repos :only specific-repo])
-
+  (:require [tentacles.repos :as repos :only (specific-repo)]
+            [clojure.data.json :as json])
+  (:use [clojure.string :only (trim)]))
 
 (defn builder-handler-leiningen 
   "Builder handler for leiningen projects."
@@ -13,9 +13,16 @@
         map     (apply hash-map (drop 3 data))]
     (map :dependencies)))
 
-(defn origin-handler-github
-  "Origin handler for github projects."
+(defn origin-type
+  "Map an URI to an origin type."
   [uri]
+  (cond (re-matches #"^https?://github.com/.+?/.+?(\.git|/.*)?$" uri) :github
+        (re-matches #"^https?://.+?.github.(io|com)/.+?/?.*$" uri) :github
+        :else :UNKNOWN))
+
+(defmulti handle-origin origin-type)
+
+(defmethod handle-origin :github [uri]
   (let [[user repo]
         (if-let [[_ user repo _]
                  (re-matches #"^https?://github.com/(.+?)/(.+?)(\.git|/.*)?$" uri)]
@@ -31,27 +38,19 @@
                :authors [((project :owner) :login)]
                :languages languages}}))
 
-(defn origin-type 
-  "Map an URI to an origin type."
-  [uri]
-  (cond (re-matches #"^https?://github.com/.+?/.+?(\.git|/.*)?$" uri) :github
-        (re-matches #"^https?://.+?.github.(io|com)/.+?/?.*$" uri) :github))
+(defmethod handle-origin :UNKNOWN [uri]
+  {:type :UNKNOWN})
 
 (defn resolve-project
   "Extract project metadata out of URI."
   [s]
-  (let [uri (trim s)
-        type (origin-type uri)]
-    (case type
-      :github (project-handler-github uri)
-      ;; ...
-      nil
-      )))
+  (let [uri (trim s)]
+    (handle-origin uri)))
 
 (defn discover
   "list tipable dependencies of a project given its URI."
   [subject]
-  (pr-str (pr-str (resolve-project subject)))
+  (json/write-str (resolve-project subject)))
   
 (comment
   {:source "http://github.com/djui/tipesso.git"

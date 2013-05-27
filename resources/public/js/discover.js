@@ -4,7 +4,7 @@ function DiscoverCtrl($scope, $http) {
            method: 'GET',
            params: {'name': $scope.tipProject}
           }).success(function(data) {
-            alert(data);
+            alert(JSON.stringify(data));
           });
   }
 }
