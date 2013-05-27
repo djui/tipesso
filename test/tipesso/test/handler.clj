@@ -1,5 +1,6 @@
 (ns tipesso.test.handler
-  (:use clojure.test
+  (:use clojure.java.io
+        clojure.test
         ring.mock.request  
         tipesso.handler))
 
@@ -7,7 +8,7 @@
   (testing "main route"
     (let [response (app (request :get "/"))]
       (is (= (:status response) 200))
-      (is (= (:body response) "Hello World"))))
+      (is (= (:body response) (as-file (resource "public/index.html"))))))
   
   (testing "not-found route"
     (let [response (app (request :get "/invalid"))]
