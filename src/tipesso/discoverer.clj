@@ -1,9 +1,14 @@
 (ns tipesso.discoverer
-  (:require [tentacles.repos :as repos :only (specific-repo)]
+  (:require [tentacles.repos :as repos :only [specific-repo]]
             [clojure.data.json :as json])
-  (:use [clojure.string :only (trim)]))
+  (:use [clojure.string :only [trim]]))
 
-(defn builder-handler-leiningen 
+(defn builder-type [origin]
+  :leiningen)
+
+(defmulti deps-from-builder builder-type)
+
+(defn deps-from-builder :leiningen
   "Builder handler for leiningen projects."
   [origin]
   (let [user (first ((origin :project) :authors))
@@ -13,16 +18,43 @@
         map     (apply hash-map (drop 3 data))]
     (map :dependencies)))
 
+(defn language-type
+  "..."
+  [tiptree]
+  (let [languages (get-in tiptree [:origin :project :languages])
+        main-lang ((first languages) :name)]
+    main-lang))
+
+(defmulti identify-languages language-type)
+
+(defmethod identify-languages :Clojure [tiptree]
+  (assoc-in tiptree [:origin :project :languages 0] :builder {:name :leiningen}))
+
+(defn project-type
+  "Map an origin to a project type."
+  [tiptree]
+  :github)
+
+(defmulti identify-project project-type)
+
+(defmethod identify-project :github [tiptree]
+  (let [project (repos/specific-repo user repo)
+        languages (repos/languages user repo)
+        langs (map (partial hash-map :name) (keys languages))]
+    (assoc-in tiptree [:origin :project] {:name (project :name)
+                                          :authors [((project :owner) :login)]
+                                          :languages langs})))
 (defn origin-type
   "Map an URI to an origin type."
-  [uri]
-  (cond (re-matches #"^https?://github.com/.+?/.+?(\.git|/.*)?$" uri) :github
-        (re-matches #"^https?://.+?.github.(io|com)/.+?/?.*$" uri) :github
-        :else :UNKNOWN))
+  [tiptree]
+  (let [uri (tiptree :source)]
+    (cond (re-matches #"^https?://github.com/.+?/.+?(\.git|/.*)?$" uri) :github
+          (re-matches #"^https?://.+?.github.(io|com)/.+?/?.*$" uri) :github
+          :else nil)))
 
-(defmulti handle-origin origin-type)
+(defmulti identify-origin origin-type)
 
-(defmethod handle-origin :github [uri]
+(defmethod identify-origin :github [tiptree]
   (let [[user repo]
         (if-let [[_ user repo _]
                  (re-matches #"^https?://github.com/(.+?)/(.+?)(\.git|/.*)?$" uri)]
@@ -31,59 +63,50 @@
                    (re-matches #"^https?://(.+?).github.(io|com)/(.+?)/?.*$" uri)]
             [user repo]))
         project (repos/specific-repo user repo)
-        languages (repos/languages user repo)]
-    {:type :github
-     :uri (project :html_url)
-     :project {:name (project :name)
-               :authors [((project :owner) :login)]
-               :languages languages}}))
+    {:type :github, :uri (project :html_url)}))
+  
+(defmethod identify-origin nil [tiptree]
+  {:type nil})
 
-(defmethod handle-origin :UNKNOWN [uri]
-  {:type :UNKNOWN})
+(defn get-config [builder, uri]
+  (let [deps ("identify-depencies" config)]
+    ))
 
-(defn resolve-project
-  "Extract project metadata out of URI."
-  [s]
-  (let [uri (trim s)]
-    (handle-origin uri)))
+(defn get-dependencies [config]
+  (let [deps ("identify-depencies" config)]
+    ))
+
+(defn sanitize
+  "Assert source is an usable URI. And clean it up."
+  [src] (trim src))
+
+(defn new-tiptree
+  "Return an empty tiptree."
+  [uri] {:source uri})
+
+(defn create-tiptree
+  "Take an URI and create a tiptree, a tree structure of tippable items."
+  [src & _depth]
+  (get-dependencies src)
+  #_(-> src
+      new-tiptree
+      identify-origin
+      identify-project
+      identify-authors
+      identify-langs
+      identify-builder
+      identify-config
+      identify-deps))
+
+(defn filter-tippables [tiptree]
+  ;; TODO Filter out non-tippable items given the :$tippable marker.
+  tiptree)
 
 (defn discover
-  "list tipable dependencies of a project given its URI."
+  "Take the URI of a subject (project, ...) and list its tippable items."
   [subject]
-  (json/write-str (resolve-project subject)))
-  
-(comment
-  {:source "http://github.com/djui/tipesso.git"
-   :origin
-   {:type :github
-    :uri "https://github.com/djui/tipesso"
-    :project
-    {:name "tipesso"
-     :authors
-     [{:username "djui"
-       :realname "Uwe Dauernheim"
-       :uri      "http://github.com/djui"}
-      {:username "onlyafly"
-       :realname "Kevin Albrecht"
-       :uri      "http://github.com/onlyafly"}]
-     :languages
-     [{:name :clojure
-       :builder
-       {:name :leiningen
-        :config
-        {:filename "project.clj"
-         :dependencies
-         [{:name    "org.clojure/clojure"
-           :version "1.5.1"
-           :origin  "http://..."}
-          {:name    "compojure"
-           :version "1.1.5"
-           :origin  "http://..."}
-          {:name    "hiccup"
-           :version "1.0.3"
-           :origin  "http://..."}
-          {:name    "lein-ring"
-           :version "0.8.3"
-           :origin  "http://..."}]}}}]}}}
-  )
-
+  (-> subject
+      sanitize
+      (create-tiptree 1)
+      filter-tippables
+      json/write-str))
