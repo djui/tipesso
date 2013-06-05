@@ -4,32 +4,106 @@ Discover who to tip.
 
 # Idea
 
-```
-         +------------------------------------------------------------------------------------------------------------------+
-(Input)  |                                                                                                                  |
-+-----+ 1|1  +----------+ 1 1 +------------+ 1 *  +----------+ 1 1 +-----------+ 1 1 +---------------+ 1 * +------------+   |
-| URI | -+-> | ORIGIN   | --> | PROJECT    | -+-> | LANGUAGE | --> | BUILDER   | --> | CONFIG        | --> | DEPENDENCY | --+
-+-----+      +----------+     +------------+  |   +----------+     +-----------+     +---------------+     +------------+
-             | :type    |     | :name      |  |   | :name    |     | :name     |     | :filename     |     | :name      |
-             | :uri     |     | :authors   |  |   | :builder |     | :config   |     | :dependencies |     | :version   |
-             | :project |     | :languages |  |   +----------+     +-----------+     +---------------+     | :origin    |
-             +----------+     +------------+  |   : clojure  :     : leiningen :     : project.clj   :     +------------+
-             : github   :                     |   : erlang   :     : rebar     :     : rebar.config  :
-             +----------+                     |   +----------+     +-----------+     +---------------+
-                                              |
-                                              |*  +-----------+
-                                              +-> | AUTHOR    |
-                                                  +-----------+
-                                                  | $tippable |
-                                                  | :username |
-                                                  | :realname |
-                                                  | :uri      |
-                                                  +-----------+
+To make it easier and more convientient to find authors you want to support, we
+identify dependencies in projects and provide tipping information about their
+authors.
+
+## Discover
+
+Hosted projects will be scanned to identify authors. A dependency of a project
+is seen as yet another project with a authors.
+
+## Who
+
+Authors can be the main author of a project, contributors, or collaborators.
+
+## Tip
+
+Identified authors are "tippable" meaning a tipping provider called *brokers*
+(such as [Gittip](http://gittip.com/) and [Flattr](http://flattr.com/)) can be
+asked to transfer a chosen amount to the author.
+
+# Providers
+
+Three provider APIs are exposed:
+
+* **Hoster**s
+* **Builder**s
+* **Broker**s
+
+## Hoster
+
+Input to *hoster*s is an origin and outputs are authors and languages. A
+*hoster* identifies the project to generate its outputs from that.
+
+Furthermore, the *hoster*s provide an asset API, which input is a filename and
+its output is the file content.
+
+## Builder
+
+Input to *builder*s is an origin and language and outputs are dependencies. A *builder*
+identifies the configuration to generate its outputs from that.
+
+The builder asks the hoster to provide data about project files it requires to
+identify the dependencies.
+
+## Broker
+
+Input to *broker*s is an author URI and outputs is an URI to the provider's API.
+
+# APIs
+
+## Hoster
+
+```clojure
+(hoster/project origin) -> {[author], [language]}
+(hoster/asset filename) -> data
 ```
 
+## Builder
+
+```clojure
+(builder/dependencies origin language) -> [dependency]
 ```
-{:source "http://github.com/djui/tipesso.git"
- :origin
+
+## Broker
+
+```clojure
+(broker/locate author) -> api_uri
+```
+
+# Data model
+
+Entity relation model:
+
+```
+            +------------------------------------------------------------------------------------------------------------------+
+            |                                                                                                                  |
++--------+ 1|1  +----------+ 1 1 +------------+ 1 *  +----------+ 1 1 +-----------+ 1 1 +---------------+ 1 * +------------+   |
+| ORIGIN | -+-> | HOSTER   | --> | PROJECT    | -+-> | LANGUAGE | --> | BUILDER   | --> | CONFIG        | --> | DEPENDENCY | --+
++--------+      +----------+     +------------+  |   +----------+     +-----------+     +---------------+     +------------+
+| :uri   |      | :type    |     | :name      |  |   | :name    |     | :name     |     | :filename     |     | :name      |
++--------+      | :uri     |     | :authors   |  |   | :builder |     | :config   |     | :dependencies |     | :version   |
+                | :project |     | :languages |  |   +----------+     +-----------+     +---------------+     | :origin    |
+                +----------+     +------------+  |   : clojure  :     : leiningen :     : project.clj   :     +------------+
+                : github   :                     |   : erlang   :     : rebar     :     : rebar.config  :
+                +----------+                     |   +----------+     +-----------+     +---------------+
+                                                 |
+                                                 |*  +-----------+ 1 * +--------+
+                                                 +-> | AUTHOR    | --> | BROKER |
+                                                     +-----------+     +--------+
+                                                     | $tippable |     | :api   |
+                                                     | :username |     +--------+
+                                                     | :realname |
+                                                     | :uri      |
+                                                     +-----------+
+```
+
+Example data structure:
+
+```
+{:origin "http://github.com/djui/tipesso.git"
+ :hoster
    {:type :github
     :uri "https://github.com/djui/tipesso"
     :project
@@ -62,3 +136,7 @@ Discover who to tip.
                      :origin  "http://..."}]}}}
                     {:name :javascript}]}}}
 ```
+
+# Credits
+
+...
