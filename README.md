@@ -36,8 +36,9 @@ Three provider APIs are exposed:
 All hosters shall answer the question if they are responsible for a given
 project origin.
 
-Input to *hoster*s is an origin and outputs are authors and languages. A
-*hoster* identifies the project to generate its outputs from that.
+Input to *hoster*s is an origin and outputs is a project data structure
+including authors and languages. A *hoster* identifies the project to generate
+its outputs from that.
 
 Furthermore, the *hoster*s provide an asset API, which input is an origin and
 filename and its output is the file content.
@@ -110,9 +111,10 @@ Example data structure:
 ```clojure
 Project => {:origin "https://github.com/djui/tipesso"
             :url "https://github.com/djui/tipesso"
-            :hoster :github
+            :hoster 'github
             :name "tipesso"
             :description "..."
+            :assets 'github/asset
             :authors [{:username "djui"
                        :realname "Uwe Dauernheim"
                        :uri      "http://github.com/djui"}
@@ -120,21 +122,19 @@ Project => {:origin "https://github.com/djui/tipesso"
                        :realname "Kevin Albrecht"
                        :uri      "http://github.com/onlyafly"}]
             :languages [:Clojure :javascript]
-            :dependencies Dependencies
-            :assets 'github/asset}
-            
-Dependencies => [{:name    "org.clojure/clojure"
-                  :version "1.5.1"
-                  :origin  "http://..."}
-                 {:name    "compojure"
-                  :version "1.1.5"
-                  :origin  "http://..."}
-                 {:name    "hiccup"
-                  :version "1.0.3"
-                  :origin  "http://..."}
-                 {:name    "lein-ring"
-                  :version "0.8.3"
-                  :origin  "http://..."}]
+            :builder 'leiningen
+            :dependencies [{:name    "org.clojure/clojure"
+                            :version "1.5.1"
+                            :origin  "http://..."}
+                           {:name    "compojure"
+                            :version "1.1.5"
+                            :origin  "http://..."}
+                           {:name    "hiccup"
+                            :version "1.0.3"
+                            :origin  "http://..."}
+                           {:name    "lein-ring"
+                            :version "0.8.3"
+                            :origin  "http://..."}]
 ```
 
 # Credits
