@@ -1,6 +1,6 @@
 (ns tipesso.discoverer
-  (:require [tentacles.repos :as repos :only [specific-repo]]
-            [clojure.data.json :as json])
+  (:require [clojure.data.json :as json]
+            (tipesso.hosters [github :as github]))
   (:use [clojure.string :only [trim]]))
 
 
@@ -18,45 +18,12 @@
         dependencies (:dependencies map)]
     dependencies))
 
-;;; Hoster ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Github ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn user-repo [origin]
-  (if-let [[_ user repo _] (re-matches #"^https?://github.com/(.+?)/(.+?)(\.git|/.*)?$" origin)]
-    [user repo]
-    (when-let [[ _ user _ repo] (re-matches #"^https?://(.+?).github.(io|com)/(.+?)/?.*$" origin)]
-      [user repo])))
-
-(defn github-asset [project filename]
-  (let [user (get-in project [:authors 0 :username])
-        repo (:name project)]
-    (repos/contents user repo filename {})))
-
-(defn github-project [origin]
-  (when-let [[user repo] (user-repo origin)]
-    (let [project (repos/specific-repo user repo)
-          languages (keys (repos/languages user repo))]
-      {:origin origin
-       :hoster github-project
-       :name (:name project)
-       :description (:description project)
-       :type :github
-       :uri (:html_url project)
-       :authors [{:username (get-in project [:owner :login])
-                  :realname (get-in project [:owner :id])
-                  :uri (get-in project [:owner :html_url])}]
-       :languages languages
-       :assets github-asset
-       :builder nil
-       :dependencies nil})))
-
 ;;; Main ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn default-providers
   "Return a map with default providers. The list is ordered by detection
   priority."
-  [] {:hosters [github-project]
+  [] {:hosters [github/project]
       :builders [leiningen-dependencies]
       :brokers []})
 
