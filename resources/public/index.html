@@ -28,8 +28,32 @@
             <input type="submit" value="Discover" class="btn btn-success" />
           </div>
         </form>
-      </div>
-      
-    </div>
+
+        <div class="span6 offset3">
+          <table class="table">
+            <caption><h3>Our tipping recommendations!</h3></caption>
+            <thead>
+              <tr>
+                <th>Person</th>
+                <th>Reason to Tip</th>
+                <th>Tip them!</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="tippable in tippables">
+                <td>{{tippable.username}}</td>
+                <td>{{tippable.reason}}</td>
+                <td>
+                  <iframe style="border: 0; margin: 0; padding: 0;"
+                          src="https://www.gittip.com/{{tippable.username}}/widget.html"
+                          width="48pt" height="22pt"></iframe>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div> <!-- DiscoverCtrl -->
+    </div> <!-- .container -->
   </body>
 </html>

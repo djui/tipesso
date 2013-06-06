@@ -44,7 +44,10 @@
 
 (defn filter-tippables
   "Filter out non-tippable items given the :$tippable marker."
-  [tiptree] (:dependencies tiptree))
+  [tiptree]
+  [{:location :github
+    :username (get-in tiptree [:authors 0 :username])
+    :reason "Repo author"}])
 
 (defn discover
   "Takes the origin URI of a subject (project, ...) and a map of API providers
