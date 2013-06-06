@@ -33,16 +33,22 @@ Three provider APIs are exposed:
 
 ## Hoster
 
+All hosters shall answer the question if they are responsible for a given
+project origin.
+
 Input to *hoster*s is an origin and outputs are authors and languages. A
 *hoster* identifies the project to generate its outputs from that.
 
-Furthermore, the *hoster*s provide an asset API, which input is a filename and
-its output is the file content.
+Furthermore, the *hoster*s provide an asset API, which input is an origin and
+filename and its output is the file content.
 
 ## Builder
 
-Input to *builder*s is an origin and language and outputs are dependencies. A *builder*
-identifies the configuration to generate its outputs from that.
+All builders shall answer the question if they are responsible for a given
+language.
+
+Input to *builder*s is an origin and language and outputs are dependencies. A
+*builder* identifies the configuration to generate its outputs from that.
 
 The builder asks the hoster to provide data about project files it requires to
 identify the dependencies.
@@ -56,20 +62,20 @@ Input to *broker*s is an author URI and outputs is an URI to the provider's API.
 ## Hoster
 
 ```clojure
-(hoster/project origin) -> {[author], [language]}
-(hoster/asset filename) -> data
+(hoster/project origin) ; => 'project-data
+(hoster/asset origin filename) ; => 'asset-data
 ```
 
 ## Builder
 
 ```clojure
-(builder/dependencies origin language) -> [dependency]
+(builder/dependencies project-data) ; => [dependency]
 ```
 
 ## Broker
 
 ```clojure
-(broker/locate author) -> api_uri
+(broker/locate author) ; => 'api-uri
 ```
 
 # Data model
@@ -101,40 +107,34 @@ Entity relation model:
 
 Example data structure:
 
-```
-{:origin "http://github.com/djui/tipesso.git"
- :hoster
-   {:type :github
-    :uri "https://github.com/djui/tipesso"
-    :project
-      {:name "tipesso"
-       :authors
-         [{:username "djui"
-           :realname "Uwe Dauernheim"
-           :uri      "http://github.com/djui"}
-          {:username "onlyafly"
-           :realname "Kevin Albrecht"
-           :uri      "http://github.com/onlyafly"}]
-       :languages
-         [{:name :Clojure
-           :builder
-             {:name :leiningen
-              :config
-                {:filename "project.clj"
-                 :dependencies
-                   [{:name    "org.clojure/clojure"
-                     :version "1.5.1"
-                     :origin  "http://..."}
-                    {:name    "compojure"
-                     :version "1.1.5"
-                     :origin  "http://..."}
-                    {:name    "hiccup"
-                     :version "1.0.3"
-                     :origin  "http://..."}
-                    {:name    "lein-ring"
-                     :version "0.8.3"
-                     :origin  "http://..."}]}}}
-                    {:name :javascript}]}}}
+```clojure
+Project => {:origin "https://github.com/djui/tipesso"
+            :url "https://github.com/djui/tipesso"
+            :hoster :github
+            :name "tipesso"
+            :description "..."
+            :authors [{:username "djui"
+                       :realname "Uwe Dauernheim"
+                       :uri      "http://github.com/djui"}
+                      {:username "onlyafly"
+                       :realname "Kevin Albrecht"
+                       :uri      "http://github.com/onlyafly"}]
+            :languages [:Clojure :javascript]
+            :dependencies Dependencies
+            :assets 'github/asset}
+            
+Dependencies => [{:name    "org.clojure/clojure"
+                  :version "1.5.1"
+                  :origin  "http://..."}
+                 {:name    "compojure"
+                  :version "1.1.5"
+                  :origin  "http://..."}
+                 {:name    "hiccup"
+                  :version "1.0.3"
+                  :origin  "http://..."}
+                 {:name    "lein-ring"
+                  :version "0.8.3"
+                  :origin  "http://..."}]
 ```
 
 # Credits
