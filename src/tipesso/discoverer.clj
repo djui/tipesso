@@ -9,10 +9,14 @@
 ;; Leiningen ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn leiningen-dependencies [project]
-  (let [content (String. (:content ((:assets project) project "project.clj")))
-        data    (binding [*read-eval* false] (read-string content))
-        map     (apply hash-map (drop 3 data))]
-    map))
+  (let [asset-result ((:assets project) project "project.clj")
+        content (if-let [raw-content (:content asset-result)]
+                  (String. raw-content)
+                  "[]")
+        data (binding [*read-eval* false] (read-string content))
+        map (apply hash-map (drop 3 data))
+        dependencies (:dependencies map)]
+    dependencies))
 
 ;;; Hoster ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

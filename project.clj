@@ -9,5 +9,4 @@
                  [org.clojure/data.json "0.2.2"]]
   :plugins [[lein-ring "0.8.3"]]
   :ring {:handler tipesso.handler/app}
-  :profiles
-  {:dev {:dependencies [[ring-mock "0.1.3"]]}})
+  :profiles {:dev {:dependencies [[ring-mock "0.1.3"]]}})
