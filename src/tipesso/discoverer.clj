@@ -1,30 +1,15 @@
 (ns tipesso.discoverer
   (:require [clojure.data.json :as json]
-            (tipesso.hosters [github :as github]))
+            (tipesso.hosters [github :as github])
+            (tipesso.builders [leiningen :as leiningen]))
   (:use [clojure.string :only [trim]]))
 
-
-;;; Builder ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Leiningen ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn leiningen-dependencies [project]
-  (let [asset-result ((:assets project) project "project.clj")
-        content (if-let [raw-content (:content asset-result)]
-                  (String. raw-content)
-                  "[]")
-        data (binding [*read-eval* false] (read-string content))
-        map (apply hash-map (drop 3 data))
-        dependencies (:dependencies map)]
-    dependencies))
-
-;;; Main ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn default-providers
   "Return a map with default providers. The list is ordered by detection
   priority."
   [] {:hosters [github/project]
-      :builders [leiningen-dependencies]
+      :builders [leiningen/dependencies]
       :brokers []})
 
 (defn sanitize

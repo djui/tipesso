@@ -1,4 +1,4 @@
-(ns tipesso.github-test
+(ns tipesso.hosters.github-test
   (:use clojure.test
         tipesso.hosters.github))
 
@@ -9,7 +9,7 @@
   (is (= (user-repo "https://github.com/djui/tipesso.git") ["djui" "tipesso"]))
   (is (= (user-repo "http://github.com/djui/tipesso/master") ["djui" "tipesso"]))
   (is (= (user-repo "https://github.com/djui/tipesso/master") ["djui" "tipesso"]))
-
+  
   ;; FIX these tests are failing
   ;;(is (= (user-repo "http://djui.github.io/tipesso") ["djui" "tipesso"]))
   ;;(is (= (user-repo "https://djui.github.io/tipesso") ["djui" "tipesso"]))

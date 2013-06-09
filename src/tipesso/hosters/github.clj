@@ -6,11 +6,11 @@
 ;; FIX replace sample github results with real results
 #_(
    (defn github-contents [user repo filename]
-     (repos/contents user repo filename {}))
-
+     (repos/contents user repo filename {:str? true}))
+   
    (defn github-specific-repo [user repo]
      (repos/specific-repo user repo))
-
+   
    (defn github-languages [user repo]
      (repos/languages user repo)))
 
@@ -18,17 +18,17 @@
   {:path "project.clj",
    :sha "07c48a4c8d1d009947f47e5922ed3e2c406a5cc5",
    :content (pr-str '(defproject tipesso "0.1.0-SNAPSHOT"
-                           :description "Discover who to tip"
-                           :url "http://djui.github.io/tipesso"
-                           :dependencies [[org.clojure/clojure "1.5.1"]
-                                          [compojure "1.1.5"]
-                                          [hiccup "1.0.3"]
-                                          [tentacles "0.2.5"]
-                                          ;; Parsing and writing JSON
-                                          [org.clojure/data.json "0.2.2"]]
-                           :plugins [[lein-ring "0.8.3"]]
-                           :ring {:handler tipesso.handler/app}
-                           :profiles {:dev {:dependencies [[ring-mock "0.1.3"]]}})),
+                       :description "Discover who to tip"
+                       :url "http://djui.github.io/tipesso"
+                       :dependencies [[org.clojure/clojure "1.5.1"]
+                                      [compojure "1.1.5"]
+                                      [hiccup "1.0.3"]
+                                      [tentacles "0.2.5"]
+                                      ;; Parsing and writing JSON
+                                      [org.clojure/data.json "0.2.2"]]
+                       :plugins [[lein-ring "0.8.3"]]
+                       :ring {:handler tipesso.handler/app}
+                       :profiles {:dev {:dependencies [[ring-mock "0.1.3"]]}})),
    :name "project.clj",
    :html_url "https://github.com/djui/tipesso/blob/master/project.clj",
    :size 493,
@@ -101,10 +101,11 @@
       [user repo])))
 
 (defn asset [prj filename]
+  ;; TODO: User (And maybe repo) should not be guessed but delared in project data structure
   (let [user (get-in prj [:authors 0 :username])
         repo (:name prj)
         result (github-contents user repo filename)]
-    result))
+    (:content result)))
 
 ;;---------- API
 
