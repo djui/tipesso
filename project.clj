@@ -7,7 +7,8 @@
                  [hiccup "1.0.3"]
                  [tentacles "0.2.5"]
                  ;; Parsing and writing JSON
-                 [org.clojure/data.json "0.2.2"]]
+                 [org.clojure/data.json "0.2.2"]
+                 [environ "0.4.0"]]
   :plugins [[lein-ring "0.8.3"]]
   :ring {:handler tipesso.handler/app}
   :profiles {:dev {:dependencies [[ring-mock "0.1.3"]]}}
