@@ -16,7 +16,7 @@
                            :plugins [[lein-ring "0.8.3"]]
                            :ring {:handler tipesso.handler/app}
                            :profiles {:dev {:dependencies [[ring-mock "0.1.3"]]}}))
-        prj-obj {:assets (fn [proj filename] content)}]
+        prj-obj {:assets (fn [_filepath] content)}]
     (is (= (dependencies prj-obj)
            '[[org.clojure/clojure "1.5.1"]
              [compojure "1.1.5"]
@@ -27,10 +27,10 @@
 (deftest dependencies-simple-test
   (let [content (pr-str '(defproject foo "0.1.0"
                            :dependencies [[org.clojure/clojure "1.5.1"]]))
-        prj-obj {:assets (fn [proj filename] content)}]
+        prj-obj {:assets (fn [_filepath] content)}]
     (is (= (dependencies prj-obj) '[[org.clojure/clojure "1.5.1"]]))))
 
 (deftest dependencies-trivial-test
   (let [content (pr-str '(defproject foo "0.1.0"))
-        prj-obj {:assets (fn [proj filename] content)}]
+        prj-obj {:assets (fn [_filepath] content)}]
     (is (= (dependencies prj-obj) nil))))

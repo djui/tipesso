@@ -5,16 +5,16 @@
 
 ;; FIX replace sample github results with real results
 #_(
-   (defn github-contents [user repo filename]
-     (repos/contents user repo filename {:str? true}))
+   (defn- github-contents [user repo filepath]
+     (repos/contents user repo filepath {:str? true}))
    
-   (defn github-specific-repo [user repo]
+   (defn- github-specific-repo [user repo]
      (repos/specific-repo user repo))
    
-   (defn github-languages [user repo]
+   (defn- github-languages [user repo]
      (repos/languages user repo)))
 
-(defn github-contents [user repo filename]
+(defn- github-contents [_user _repo _filepath]
   {:path "project.clj",
    :sha "07c48a4c8d1d009947f47e5922ed3e2c406a5cc5",
    :content (pr-str '(defproject tipesso "0.1.0-SNAPSHOT"
@@ -40,7 +40,7 @@
    :type "file",
    :encoding "base64"})
 
-(defn github-specific-repo [user repo]
+(defn- github-specific-repo [_user _repo]
   {:archive_url "https://api.github.com/repos/djui/tipesso/{archive_format}{/ref}",
    :has_issues true,
    :notifications_url "https://api.github.com/repos/djui/tipesso/notifications{?since,all,participating}",
@@ -89,7 +89,7 @@
    :comments_url "https://api.github.com/repos/djui/tipesso/comments{/number}",
    :keys_url "https://api.github.com/repos/djui/tipesso/keys{/key_id}"})
 
-(defn github-languages [user repo]
+(defn- github-languages [_user _repo]
   {:Clojure 1922, :JavaScript 256})
 
 ;;---------- Helpers
@@ -100,11 +100,8 @@
     (when-let [[ _ user _ repo] (re-matches #"^https?://(.+?).github.(io|com)/(.+?)/?.*$" origin)]
       [user repo])))
 
-(defn asset [prj filename]
-  ;; TODO: User (And maybe repo) should not be guessed but delared in project data structure
-  (let [user (get-in prj [:authors 0 :username])
-        repo (:name prj)
-        result (github-contents user repo filename)]
+(defn- asset [user repo filepath]
+  (let [result (github-contents user repo filepath)]
     (:content result)))
 
 ;;---------- API
@@ -123,6 +120,6 @@
                   :realname (get-in prj [:owner :id])
                   :uri (get-in prj [:owner :html_url])}]
        :languages languages
-       :assets asset
+       :assets (fn [filepath] (asset user repo filepath))
        :builder nil
        :dependencies nil})))
