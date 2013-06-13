@@ -1,4 +1,5 @@
 (ns tipesso.handler
+  (:use environ.core)
   (:use compojure.core
         [ring.adapter.jetty :only [run-jetty]])
   (:require [compojure.handler :as handler]
@@ -8,7 +9,9 @@
   (:gen-class))
 
 (defroutes app-routes
-  (GET "/" [] (response/resource-response "index.html" {:root "public"}))
+  (GET "/" []
+       (let [res (response/resource-response "index.html" {:root "public"})]
+         (response/content-type res "text/html")))
   (GET "/project*" {{link "name"} :query-params} (discoverer/discover link))
   (route/resources "/")
   (route/not-found "Not Found"))
@@ -20,5 +23,5 @@
   (run-jetty app {:port port :join? false}))
 
 (defn -main []
-  (let [port (Integer/parseInt (or (System/getenv "PORT") "8080"))]
+  (let [port (Integer/parseInt (:port env "8080"))]
     (start port)))

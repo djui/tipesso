@@ -113,6 +113,7 @@ Project => {:origin "https://github.com/djui/tipesso"
             :url "https://github.com/djui/tipesso"
             :hoster 'github
             :name "tipesso"
+            :id "djui/tipesso"
             :description "..."
             :assets 'github/asset
             :authors [{:username "djui"
@@ -123,16 +124,16 @@ Project => {:origin "https://github.com/djui/tipesso"
                        :uri      "http://github.com/onlyafly"}]
             :languages [:Clojure :javascript]
             :builder 'leiningen
-            :dependencies [{:name    "org.clojure/clojure"
+            :dependencies [{:id      "org.clojure/clojure"
                             :version "1.5.1"
                             :origin  "http://..."}
-                           {:name    "compojure"
+                           {:id      "compojure"
                             :version "1.1.5"
                             :origin  "http://..."}
-                           {:name    "hiccup"
+                           {:id      "hiccup"
                             :version "1.0.3"
                             :origin  "http://..."}
-                           {:name    "lein-ring"
+                           {:id      "lein-ring"
                             :version "0.8.3"
                             :origin  "http://..."}]
 ```

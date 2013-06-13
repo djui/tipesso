@@ -1,14 +1,15 @@
 (ns tipesso.discoverer
   (:require [clojure.data.json :as json]
-            (tipesso.hosters [github :as github])
-            (tipesso.builders [leiningen :as leiningen]))
+            [tipesso.hosters.github :as github]
+            [tipesso.hosters.clojars :as clojars]
+            [tipesso.builders.leiningen :as leiningen])
   (:use [clojure.string :only [trim]]))
 
 
 (defn default-providers
   "Return a map with default providers. The list is ordered by detection
   priority."
-  [] {:hosters [github/project]
+  [] {:hosters [github/project clojars/project]
       :builders [leiningen/dependencies]
       :brokers []})
 
@@ -22,17 +23,28 @@
   ([origin providers]
      (create-tiptree origin providers 1))
   ([origin providers depth]
-     (let [project (some #(% origin) (:hosters providers))
-           dependencies (some #(% project) (:builders providers))
-           tiptree (assoc-in project [:dependencies] dependencies)]
+     (let [hosters (:hosters providers)
+           builders (:builders providers)
+           ;; 1. Iteration
+           project (some #(% origin) hosters)
+           ;; 2. Iteration
+           dependencies (some #(% project) builders)
+           ;; 3. Iteration
+           dependency-projects (map (fn [dep] (some #(% (:origin dep)) hosters)) dependencies)
+           ;; Merge all together
+           tiptree (assoc-in project [:dependencies] dependency-projects)]
        tiptree)))
 
 (defn filter-tippables
   "Filter out non-tippable items given the :$tippable marker."
   [tiptree]
-  [{:location :github
-    :username (get-in tiptree [:authors 0 :username])
-    :reason "Repo author"}])
+  (let [author [{:location :github
+                 :username (get-in tiptree [:tippables 0 :username])
+                 :reason "Project author"}]
+        deps (map (fn [dep] {:location :clojars
+                             :username (:uri dep)
+                             :reason "Dependency author"}) (:dependencies tiptree))]
+    (concat author deps)))
 
 (defn discover
   "Takes the origin URI of a subject (project, ...) and a map of API providers
