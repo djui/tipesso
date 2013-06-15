@@ -8,17 +8,6 @@
 
 (def ^:const INF Double/POSITIVE_INFINITY)
 
-(defn- default-providers
-  "Return a list of default providers. The list is ordered by detection
-  priority."
-  [] [github/responsible?
-      clojars/responsible?
-      leiningen/responsible?])
-
-(defn- sanitize
-  "Assert origin is an usable URI and clean it up."
-  [origin] (trim origin))
-
 (defn- fixpoint
   "Main part of the fixpoint engine. Take data with at least an origin URI and
   create a tip-tree, a tree structure of tippable items. Options is a map
@@ -33,21 +22,18 @@
    data-in))
 
 (defn- tippables
-  "Traverse tip-tree and filter tippable items.
-  {:a nil :tippable {:foo 1} :b [{:c nil :tippable {:bar 2}}]}
-  => [{:foo 1} {:bar 2}]"
+  "Traverse tip-tree and filter tippables."
   [tip-tree]
-  (let [nodes (tree-seq sequential? identity tip-tree)]
-    (flatten (keep :tippables nodes))))
+  (->> tip-tree (tree-seq sequential? identity) (keep :tippables) flatten))
 
 (defn discover
   "Take URI of a subject (project, dependency, etc.) and list the subject's
    tippables."
-  ([str] ;; For testing
-     (discover str (default-providers)))
-  ([str providers]
-     (let [uri (sanitize str)
-           data {:origin uri}
+  ([uri] (discover uri [github/responsible?
+                        leiningen/responsible?
+                        clojars/responsible?]))
+  ([uri providers] ;; For testing
+     (let [data {:origin (trim uri)}
            tip-tree (fixpoint data {:providers providers})
            tippables (tippables tip-tree)]
        (json/write-str tippables))))
