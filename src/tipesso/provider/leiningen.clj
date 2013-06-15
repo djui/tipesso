@@ -11,24 +11,20 @@
   [src]
   (->> src safe-parse (drop 3) (apply hash-map) :dependencies))
 
-(defn- asset-api
-  "Return asset api given a project data structure."
-  [project]
-  (:assets project))
-
-(defn extend-dep
+(defn- extend-dep
   "Construct dependency data structure."
-  [dependency]
-  (let [id (first dependency)
-        version (second dependency)
-        origin (format "https://clojars.org/%s/versions/%s" id version)]
-    {:id id
-     :version version
-     :origin origin}))
+  [[id version]]
+  (let [origin (format "https://clojars.org/%s/versions/%s" id version)]
+    {:origin origin
+     :id id
+     :version version}))
 
-(defn dependencies
+(defn responsible?
   "Find and return dependencies given a typical leiningen project setup."
-  [project]
-  (let [prj-file ((asset-api project) "project.clj")
-        deps (prj->deps prj-file)]
-    (map extend-dep deps)))
+  [{:keys [assets] :as data}]
+  #_(prn "leiningen" data)
+  (when assets
+    (->> "project.clj"
+        assets
+        prj->deps
+        (map extend-dep))))

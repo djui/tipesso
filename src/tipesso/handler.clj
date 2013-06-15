@@ -4,7 +4,7 @@
         [ring.adapter.jetty :only [run-jetty]])
   (:require [compojure.handler :as handler]
             [compojure.route :as route]
-            [tipesso.discoverer :as discoverer]
+            [tipesso.core :as tipesso]
             [ring.util.response :as response])
   (:gen-class))
 
@@ -12,7 +12,7 @@
   (GET "/" []
        (let [res (response/resource-response "index.html" {:root "public"})]
          (response/content-type res "text/html")))
-  (GET "/project*" {{link "name"} :query-params} (discoverer/discover link))
+  (GET "/project*" {{uri "name"} :query-params} (tipesso/discover uri))
   (route/resources "/")
   (route/not-found "Not Found"))
 

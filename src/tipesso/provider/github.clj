@@ -9,7 +9,7 @@
   environment variable GITHUB_TOKEN to your Github OAuth token for this
   application."
   []
-  (prn (core/with-defaults {:oauth-token (env :github-token)} (core/rate-limit)))
+  (prn (core/with-defaults {:oauth-token (env :github-token)} (core/rate-limit))) ;; debug only!
   {:oauth-token (env :github-token)})
 
 (defn- github-contents [user repo filepath]
@@ -24,32 +24,21 @@
   (core/with-defaults (github-defaults)
     (repos/languages user repo)))
 
-(defn user-repo [origin]
-  (if-let [[_ user repo _] (re-matches #"^https?://github.com/(.+?)/(.+?)(\.git|/.*)?$" origin)]
+(defn- user-repo [url]
+  (if-let [[_ user repo _] (re-matches #"^https?://github.com/(.+?)/(.+?)(\.git|/.*)?$" url)]
     [user repo]
-    (when-let [[ _ user _ repo] (re-matches #"^https?://(.+?).github.(io|com)/(.+?)/?.*$" origin)]
+    (when-let [[ _ user _ repo] (re-matches #"^https?://(.+?).github.(io|com)/(.+?)/?.*$" url)]
       [user repo])))
 
 (defn- asset [user repo filepath]
-  (let [result (github-contents user repo filepath)]
-    (:content result)))
+  (:content (github-contents user repo filepath)))
 
-(defn project [origin]
-  (when-let [[user repo] (user-repo origin)]
-    (let [prj (github-specific-repo user repo)
-          languages (keys (github-languages user repo))
-          owner (:owner prj)
-          main-author {:username (:login owner)
-                       :realname (:id owner)
-                       :uri (:html_url owner)}]
-      {:origin origin
-       :hoster project
-       :type :github
-       :name (:name prj)
-       :uri (:html_url prj)
-       :description (:description prj)
-       :tippables [main-author]
-       :languages languages
-       :assets (fn [filepath] (asset user repo filepath))
-       :builder nil
-       :dependencies nil})))
+(defn responsible?
+  "Find and return languages, assets function and tippables."
+  [{:keys [origin] :as data}]
+  #_(prn "github" data)
+  (when-let [[user repo] (and origin (user-repo origin))]
+    (let [{{:keys [login id html_url]} :owner} (github-specific-repo user repo)]
+      {:tippables [{:username login, :reason "Project owner", :origin html_url}]
+       :languages (keys (github-languages user repo))
+       :assets #(asset user repo %)})))

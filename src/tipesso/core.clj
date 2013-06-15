@@ -1,59 +1,53 @@
-(ns tipesso.discoverer
+(ns tipesso.core
   (:require [clojure.data.json :as json]
-            [tipesso.hosters.github :as github]
-            [tipesso.hosters.clojars :as clojars]
-            [tipesso.builders.leiningen :as leiningen])
+            [tipesso.provider.github :as github]
+            [tipesso.provider.clojars :as clojars]
+            [tipesso.provider.leiningen :as leiningen])
   (:use [clojure.string :only [trim]]))
 
 
-(defn default-providers
-  "Return a map with default providers. The list is ordered by detection
-  priority."
-  [] {:hosters [github/project clojars/project]
-      :builders [leiningen/dependencies]
-      :brokers []})
+(def ^:const INF Double/POSITIVE_INFINITY)
 
-(defn sanitize
-  "Assert origin is an usable URI; and clean it up."
+(defn- default-providers
+  "Return a list of default providers. The list is ordered by detection
+  priority."
+  [] [github/responsible?
+      clojars/responsible?
+      leiningen/responsible?])
+
+(defn- sanitize
+  "Assert origin is an usable URI and clean it up."
   [origin] (trim origin))
 
-(defn create-tiptree
-  "Take an origin URI and map of API provider and create a tiptree, a tree
-  structure of tippable items."
-  ([origin providers]
-     (create-tiptree origin providers 1))
-  ([origin providers depth]
-     (let [hosters (:hosters providers)
-           builders (:builders providers)
-           ;; 1. Iteration
-           project (some #(% origin) hosters)
-           ;; 2. Iteration
-           dependencies (some #(% project) builders)
-           ;; 3. Iteration
-           dependency-projects (map (fn [dep] (some #(% (:origin dep)) hosters)) dependencies)
-           ;; Merge all together
-           tiptree (assoc-in project [:dependencies] dependency-projects)]
-       tiptree)))
+(defn- fixpoint
+  "Main part of the fixpoint engine. Take data with at least an origin URI and
+  create a tip-tree, a tree structure of tippable items. Options is a map
+  containing API providers under :provider and the max iteration count :ttl."
+  [data-in & [{:keys [providers ttl] :or {ttl INF} :as opts}]]
+  (conj
+   (when (pos? ttl)
+     (when-let [res (some #(% data-in) providers)]
+       (let [data-out (if (sequential? res) res [res])
+             opts (assoc opts :ttl (dec ttl))]
+         (map #(fixpoint % opts) data-out))))
+   data-in))
 
-(defn filter-tippables
-  "Filter out non-tippable items given the :$tippable marker."
-  [tiptree]
-  (let [author [{:location :github
-                 :username (get-in tiptree [:tippables 0 :username])
-                 :reason "Project author"}]
-        deps (map (fn [dep] {:location :clojars
-                             :username (:uri dep)
-                             :reason "Dependency author"}) (:dependencies tiptree))]
-    (concat author deps)))
+(defn- tippables
+  "Traverse tip-tree and filter tippable items.
+  {:a nil :tippable {:foo 1} :b [{:c nil :tippable {:bar 2}}]}
+  => [{:foo 1} {:bar 2}]"
+  [tip-tree]
+  (let [nodes (tree-seq sequential? identity tip-tree)]
+    (flatten (keep :tippables nodes))))
 
 (defn discover
-  "Takes the origin URI of a subject (project, ...) and a map of API providers
-  and list the subject's tippable items."
-  ([origin]
-     (discover origin (default-providers)))
-  ([origin providers]
-     (-> origin
-         sanitize
-         (create-tiptree providers 1)
-         filter-tippables
-         json/write-str)))
+  "Take URI of a subject (project, dependency, etc.) and list the subject's
+   tippables."
+  ([str] ;; For testing
+     (discover str (default-providers)))
+  ([str providers]
+     (let [uri (sanitize str)
+           data {:origin uri}
+           tip-tree (fixpoint data {:providers providers})
+           tippables (tippables tip-tree)]
+       (json/write-str tippables))))

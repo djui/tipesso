@@ -3,11 +3,11 @@
   (:require [xenopath.xpath :as xpath]))
 
 
-(defn dep-repo
+(defn- dep-repo
   "Deconstruct repo URL into group id, artifact id, and version."
-  [origin]
+  [url]
   (when-let [[_ group-artifact group artifact _ version]
-             (re-matches #"^https?://clojars\.org/((.+?)/(.+?)|(.+?))/versions/(.+)$" origin)]
+             (re-matches #"^https?://clojars\.org/((.+?)/(.+?)|(.+?))/versions/(.+)$" url)]
     (if group
       [group artifact version]
       [group-artifact group-artifact version])))
@@ -48,15 +48,12 @@
   (try (xpath/lookup-string "/project/url" xml-string)
        (catch Exception _)))
 
-(defn project [origin]
-  (when-let [[group artifact version] (dep-repo origin)]
+(defn responsible?
+  "Find and return origin of hosted projects."
+  [{:keys [origin] :as data}]
+  #_(prn "clojars" data)
+  (when-let [[group artifact version] (and origin (dep-repo origin))]
     (let [repo-url (create-repo-url group artifact version)]
       (when-let [pom (pom-file repo-url artifact version)]
         (when-let [uri (project-url pom)]
-          {:origin origin
-           :hoster project
-           :type :clojars
-           :name 'artifact
-           :id (format "%s/%s" 'group 'artifact)
-           :uri uri
-           :tippables []})))))
+          {:dependencies uri})))))
