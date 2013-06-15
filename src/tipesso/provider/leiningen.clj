@@ -1,15 +1,15 @@
-(ns tipesso.builders.leiningen)
+(ns tipesso.provider.leiningen)
 
 
-(defn- parse-clj-src
-  "Parse Clojure source code string."
+(defn- safe-parse
+  "Parse a clojure term with evaluating anything."
   [str]
   (binding [*read-eval* false] (read-string str)))
 
 (defn- prj->deps
   "Extract dependencies from project.clj file string."
   [src]
-  (->> src parse-clj-src (drop 3) (apply hash-map) :dependencies))
+  (->> src safe-parse (drop 3) (apply hash-map) :dependencies))
 
 (defn- asset-api
   "Return asset api given a project data structure."

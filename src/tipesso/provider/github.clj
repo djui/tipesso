@@ -1,4 +1,4 @@
-(ns tipesso.hosters.github
+(ns tipesso.provider.github
   (:use environ.core)
   (:use [tentacles.core :as core :only [with-defaults]])
   (:use [tentacles.repos :as repos :only [contents, languages, specific-repo]]))

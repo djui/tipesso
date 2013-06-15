@@ -1,4 +1,4 @@
-(ns tipesso.hosters.clojars
+(ns tipesso.provider.clojars
   (:use [clojure.string :only [join, split]])
   (:require [xenopath.xpath :as xpath]))
 
