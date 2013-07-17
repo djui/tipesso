@@ -25,11 +25,19 @@ asked to transfer a chosen amount to the author.
 
 # Providers
 
-Three provider APIs are exposed:
+In its core, the engine takes **in-data** and asks sequentially if any of the
+declared providers can use (is responsible) this data to provide more insight
+into the project structure. The iteration repeats as soon as the first provider
+returning a non-`nil` **out-data** value responds. The iteration/fixture stops
+when all declared providers return `nil`.
+
+Three provider types can be declared:
 
 * **Hoster**s
 * **Builder**s
 * **Broker**s
+
+The API for each of these are the same and are only seperated as a mental model.
 
 ## Hoster
 
@@ -60,23 +68,9 @@ Input to *broker*s is an author URI and outputs is an URI to the provider's API.
 
 # APIs
 
-## Hoster
-
 ```clojure
-(hoster/project origin) ; => 'project-data
-(hoster/asset origin filename) ; => 'asset-data
-```
-
-## Builder
-
-```clojure
-(builder/dependencies project-data) ; => [dependency]
-```
-
-## Broker
-
-```clojure
-(broker/locate author) ; => 'api-uri
+;; tipesso.provider.foo
+(handler in-data) ;=> out-data
 ```
 
 # Data model

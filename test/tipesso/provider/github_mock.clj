@@ -1,4 +1,4 @@
-(ns tipesso.hosters.github_mock
+(ns tipesso.provider.github_mock
   (:use [tentacles.repos :as repos :only [contents, languages, specific-repo]]))
 
 ;;---------- Github communication
@@ -38,7 +38,8 @@
    :issue_comment_url "https://api.github.com/repos/djui/tipesso/issues/comments/{number}",
    :contributors_url "https://api.github.com/repos/djui/tipesso/contributors",
    :compare_url "https://api.github.com/repos/djui/tipesso/compare/{base}...{head}",
-   :fork false, :labels_url "https://api.github.com/repos/djui/tipesso/labels{/name}",
+   :fork false,
+   :labels_url "https://api.github.com/repos/djui/tipesso/labels{/name}",
    :collaborators_url "https://api.github.com/repos/djui/tipesso/collaborators{/collaborator}",
    :pushed_at "2013-06-06T10:22:23Z",
    :git_commits_url "https://api.github.com/repos/djui/tipesso/git/commits{/sha}",
@@ -50,7 +51,8 @@
    :watchers 0,
    :updated_at "2013-06-06T10:22:24Z",
    :assignees_url "https://api.github.com/repos/djui/tipesso/assignees{/user}",
-   :has_wiki true, :stargazers_url "https://api.github.com/repos/djui/tipesso/stargazers",
+   :has_wiki true,
+   :stargazers_url "https://api.github.com/repos/djui/tipesso/stargazers",
    :html_url "https://github.com/djui/tipesso",
    :teams_url "https://api.github.com/repos/djui/tipesso/teams",
    :git_refs_url "https://api.github.com/repos/djui/tipesso/git/refs{/sha}",
@@ -72,17 +74,26 @@
            :repos_url "https://api.github.com/users/djui/repos",
            :id 99752,
            :subscriptions_url "https://api.github.com/users/djui/subscriptions"},
-   :language "Clojure", :merges_url "https://api.github.com/repos/djui/tipesso/merges",
-   :size 620, :created_at "2013-05-25T11:27:00Z",
+   :language "Clojure",
+   :merges_url "https://api.github.com/repos/djui/tipesso/merges",
+   :size 620,
+   :created_at "2013-05-25T11:27:00Z",
    :branches_url "https://api.github.com/repos/djui/tipesso/branches{/branch}",
    :issues_url "https://api.github.com/repos/djui/tipesso/issues{/number}",
-   :private false, :homepage nil, :git_url "git://github.com/djui/tipesso.git",
-   :mirror_url nil, :url "https://api.github.com/repos/djui/tipesso",
+   :private false,
+   :homepage nil,
+   :git_url "git://github.com/djui/tipesso.git",
+   :mirror_url nil,
+   :url "https://api.github.com/repos/djui/tipesso",
    :issue_events_url "https://api.github.com/repos/djui/tipesso/issues/events{/number}",
    :subscribers_url "https://api.github.com/repos/djui/tipesso/subscribers",
-   :has_downloads true, :full_name "djui/tipesso", :watchers_count 0,
+   :has_downloads true,
+   :full_name "djui/tipesso",
+   :watchers_count 0,
    :statuses_url "https://api.github.com/repos/djui/tipesso/statuses/{sha}",
-   :open_issues_count 2, :master_branch "master", :ssh_url "git@github.com:djui/tipesso.git",
+   :open_issues_count 2, 
+   :master_branch "master",
+   :ssh_url "git@github.com:djui/tipesso.git",
    :languages_url "https://api.github.com/repos/djui/tipesso/languages",
    :commits_url "https://api.github.com/repos/djui/tipesso/commits{/sha}",
    :forks_url "https://api.github.com/repos/djui/tipesso/forks",
@@ -90,7 +101,10 @@
    :contents_url "https://api.github.com/repos/djui/tipesso/contents/{+path}",
    :events_url "https://api.github.com/repos/djui/tipesso/events",
    :tags_url "https://api.github.com/repos/djui/tipesso/tags",
-   :open_issues 2, :id 10283180, :forks 0, :svn_url "https://github.com/djui/tipesso",
+   :open_issues 2,
+   :id 10283180,
+   :forks 0,
+   :svn_url "https://github.com/djui/tipesso",
    :downloads_url "https://api.github.com/repos/djui/tipesso/downloads",
    :blobs_url "https://api.github.com/repos/djui/tipesso/git/blobs{/sha}",
    :description "Discover who to tip",
@@ -99,7 +113,8 @@
    :keys_url "https://api.github.com/repos/djui/tipesso/keys{/key_id}"})
 
 (defn- github-languages [_user _repo]
-  {:Clojure 1922, :JavaScript 256})
+  {:Clojure 1922,
+   :JavaScript 256})
 
 ;;---------- Helpers
 

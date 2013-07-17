@@ -4,7 +4,7 @@
         ring.mock.request  
         tipesso.handler))
 
-(deftest test-app
+(deftest app-routes-test
   (testing "main route"
     (let [response (app (request :get "/"))]
       (is (= (:status response) 200))

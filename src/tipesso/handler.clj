@@ -1,6 +1,6 @@
 (ns tipesso.handler
-  (:use environ.core)
-  (:use compojure.core
+  (:use environ.core
+        compojure.core
         [ring.adapter.jetty :only [run-jetty]])
   (:require [compojure.handler :as handler]
             [compojure.route :as route]
@@ -12,7 +12,7 @@
   (GET "/" []
        (let [res (response/resource-response "index.html" {:root "public"})]
          (response/content-type res "text/html")))
-  (GET "/project*" {{uri "name"} :query-params} (tipesso/discover uri))
+  (GET "/project*" {{uri "name"} :query-params} (tipesso/tippables uri))
   (route/resources "/")
   (route/not-found "Not Found"))
 

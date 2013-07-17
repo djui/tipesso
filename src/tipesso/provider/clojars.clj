@@ -1,59 +1,59 @@
 (ns tipesso.provider.clojars
-  (:use [clojure.string :only [join, split]])
-  (:require [xenopath.xpath :as xpath]))
+  (:require [xenopath.xpath :as xpath])
+  (:use [clojure.contrib.djui.core :only [ignorantly when-all-let]]
+        [clojure.string :only [join split]]))
 
 
-(defn- dep-repo
-  "Deconstruct repo URL into group id, artifact id, and version."
-  [url]
-  (when-let [[_ group-artifact group artifact _ version]
-             (re-matches #"^https?://clojars\.org/((.+?)/(.+?)|(.+?))/versions/(.+)$" url)]
-    (if group
-      [group artifact version]
-      [group-artifact group-artifact version])))
+;; TODO: Some projects' pom filename has to be discovered using the
+;; `maven-metadata.xml` file to get the correct version string like:
+;;   artifact
+;;   + XPath:"/metadata/versioning/snapshotVersions/snapshotVersion:first/value"
+;;   + ".pom"
 
-(defn- create-url
-  "Create a URL path given a (possibly nested) vector."
-  [& args]
-  (join "/" args))
+(defn- pom-url
+  "Return URL to pom file."
+  [repo artifact version]
+  (let [filename (format "%s-%s.pom" artifact version)]
+    (join "/" [repo filename])))
 
-(defn- create-repo-url
+(defn- project-url
+  "Try to find and parse the project URL."
+  [xml-string]
+  (ignorantly (xpath/lookup-string "/project/url" xml-string)))
+
+(defn- pom
+  "Try to find and parse the maven manifest POM file."
+  [repo-url artifact version]
+  (let [pom-url (pom-url repo-url artifact version)]
+    (ignorantly (slurp pom-url))))
+
+(defn- repo
   "Return URL to repo."
   [group artifact version]
   (let [base "https://clojars.org/repo"
         domains (split group #"\.")
         parts (flatten [base domains artifact version])]
-    (apply create-url parts)))
+    [(join "/" parts) artifact version]))
 
-(defn- create-pom-url
-  "Return URL to pom file."
-  [repo artifact version]
-  (let [filename (format "%s-%s.pom" artifact version)]
-    ;; TODO: Some project's pom filename has to be discovered using the
-    ;; "maven-metadata.xml" file to get the correct version string: artifact +
-    ;; XPath:"/metadata/versioning/snapshotVersions/snapshotVersion:first/value"
-    ;; + ".pom"
-    (create-url repo filename)))
+(defn- responsible?
+  "If possible, i.e. responsible, extract group id, artifact id, and version
+  from repo URL."
+  [data]
+  (when-all-let [{:keys [provider id version]} data
+                 _ (= provider :clojars)
+                 origin (format "https://clojars.org/%s/versions/%s" id version)
+                 regexp #"^https?://clojars\.org/((.+?)/(.+?)|(.+?))/versions/(.+)$"
+                 [_ group-artifact group artifact _ version] (re-matches regexp origin)]
+    (if group
+      [group artifact version]
+      [group-artifact group-artifact version])))
 
-(defn- pom-file
-  "Try to find and parse the maven manifest POM file."
-  [repo-url artifact version]
-  (let [pom-url (create-pom-url repo-url artifact version)]
-    (try (slurp pom-url)
-         (catch Exception _))))
-
-(defn- project-url
-  "Try to find and parse the project URL."
-  [xml-string]
-  (try (xpath/lookup-string "/project/url" xml-string)
-       (catch Exception _)))
-
-(defn responsible?
-  "Find and return origin of hosted projects."
-  [{:keys [origin] :as data}]
-  #_(prn "clojars" data)
-  (when-let [[group artifact version] (and origin (dep-repo origin))]
-    (let [repo-url (create-repo-url group artifact version)]
-      (when-let [pom (pom-file repo-url artifact version)]
-        (when-let [uri (project-url pom)]
-          {:dependencies uri})))))
+(defn handler
+  "Find and return origin of Clojars hosted Clojure project."
+  [data]
+  (some->> data
+           responsible?
+           (apply repo)
+           (apply pom)
+           project-url
+           (hash-map :url)))
