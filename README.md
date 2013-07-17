@@ -2,6 +2,8 @@
 
 Discover who to tip.
 
+[![Build Status](https://travis-ci.org/djui/tipesso.png?branch=master)](https://travis-ci.org/djui/tipesso)
+
 # Idea
 
 To make it easier and more convientient to find authors you want to support, we
