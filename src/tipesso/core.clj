@@ -4,7 +4,7 @@
             [tipesso.provider.clojars :as clojars]
             [tipesso.provider.leiningen :as leiningen]
             [tipesso.provider.gittip :as gittip])
-  (:use [clojure.contrib.djui.coll :only [sequential! tree-seq+]]
+  (:use [clojure.contrib.djui.coll :only [to-sequence tree-seq+]]
         [clojure.string :only [trim]]))
 
 
@@ -29,7 +29,7 @@
   [root providers & [opts]]
   (letfn [(first-responder [in-data provider]
             (let [;;_ (prn '<< (:name (meta provider)) in-data) ; debug only!
-                  out-data (sequential! (provider in-data))
+                  out-data (to-sequence (provider in-data))
                   ;;_ (prn '>> (:name (meta provider)) out-data) ; debug only!
                   ]
               out-data))

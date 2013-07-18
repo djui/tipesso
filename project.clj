@@ -5,7 +5,7 @@
                  [environ "0.4.0"]
                  [hiccup "1.0.3"]
                  [org.clojure/clojure "1.5.1"]
-                 [org.clojure.contrib/djui "1.7"]
+                 [org.clojure.contrib/djui "1.8"]
                  [org.clojure/data.json "0.2.2"]
                  [org.clojure/data.xml "0.0.7"]
                  [tentacles "0.2.6"]
