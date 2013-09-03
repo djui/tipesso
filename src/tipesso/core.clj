@@ -12,8 +12,8 @@
 
 (def config
   "Read the configuration file and make it globally available."
-  (let [default-conf (safe-parse (slurp "config.default.clj"))
-        user-conf (safe-parse (or (ignorantly (slurp "config.clj") "{}")))]
+  (let [default-conf (safe-parse (slurp "config.default.edn"))
+        user-conf (ignorantly (safe-parse (slurp "config.edn")))]
     (deep-merge default-conf user-conf)))
 
 (defn- extract
