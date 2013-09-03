@@ -7,11 +7,7 @@
     <script src="vendor/bootstrap/js/bootstrap.js"></script>
     <script src="js/discover.js"></script>
     <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.css" />
-    <style>
-      .push {
-        height: 50px;
-      }
-    </style>
+    <link rel="stylesheet" href="css/style.css" />
   </head>
   
   <body>
@@ -28,29 +24,21 @@
             <input type="submit" value="Discover" class="btn btn-success" />
           </div>
         </form>
-
+        
+        <div class="alert alert-info" ng-show="discovery_loading">Loading...</div>
+        <div class="alert alert-error" ng-show="discovery_error">Something went wrong!</div>
+        
         <div class="span6 offset3">
-          <table class="table">
-            <caption><h3>Our tipping recommendations!</h3></caption>
-            <thead>
-              <tr>
-                <th>Person</th>
-                <th>Reason to Tip</th>
-                <th>Tip them!</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr ng-repeat="tippable in tippables">
-                <td>{{tippable.username}}</td>
-                <td>{{tippable.reason}}</td>
-                <td>
-                  <iframe style="border: 0; margin: 0; padding: 0;"
-                          src="https://www.gittip.com/{{tippable.username}}/widget.html"
-                          width="48pt" height="22pt"></iframe>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <h3>Our tipping recommendations!</h3>
+          <ul ng-repeat="tippable in tippables">
+            <li class="tippable">{{tippable.username}} ({{tippable.reason}})
+              <iframe style="border: 0; margin: 0; padding: 0;"
+                      src="https://www.gittip.com/{{tippable.username}}/widget.html"
+                      width="48pt" height="22pt"></iframe></li>
+          </ul>
+          <ul ng-repeat="dependency in dependencies">
+            <li class="dependency">{{dependency.name}} ({{dependency.provider}})</li>
+          </ul>
         </div>
 
       </div> <!-- DiscoverCtrl -->

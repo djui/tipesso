@@ -1,0 +1,13 @@
+.push {
+    height: 50px;
+}
+
+li.tippable {
+    list-style: none;
+    text-align: left;
+}
+
+li.dependency {
+    list-style: none;
+    text-align: left;
+}
