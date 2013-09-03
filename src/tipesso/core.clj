@@ -37,9 +37,7 @@
   [root providers & [opts]]
   (letfn [(first-responder [in-data provider]
             (let [out-data (to-sequence (provider in-data))]
-              (if out-data
-                (debug "Discover" (:name (meta provider)) in-data out-data)
-                (trace "Discover" (:name (meta provider)) in-data out-data))
+              (debug "Discover" (:name (meta provider)) in-data out-data)
               out-data))
           (branch? [node] (not (nil? node)))
           (children [node] (some #(first-responder node %) providers))]
