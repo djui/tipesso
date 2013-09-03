@@ -2,7 +2,8 @@
   (:use [clojure.contrib.djui.core :only [when-all-let]]
         [clojure.contrib.djui.coll :only [pjuxt pmapcat distinct-by]]
         environ.core)
-  (:require [tentacles.core :as core]
+  (:require [taoensso.timbre :as timbre :refer (debug warn)]
+            [tentacles.core :as core]
             [tentacles.repos :as repos]))
 
 
@@ -15,10 +16,10 @@
   [body]
   `(core/with-defaults {:oauth-token (env :github-token)}
      (let [res# ~body]
-       (if (= 403 (:status res#)) ; rate-limit check, sort-of
-         (prn "Rate-limit exceeded!")
-         (or #_(prn "Calls remaining:" (:call-remaining (core/api-meta res#))) ; debug only!
-             res#)))))
+       ;; Naive rate-limit check
+       (when (= 403 (:status res#)) (debug "Rate-limit exceeded!"))
+       (debug "Github API call-rate" (:call-remaining (core/api-meta res#)))
+       res#)))
 
 (defn- github-contents [user repo filepath]
   (with-github-defaults (repos/contents user repo filepath {:str? true})))

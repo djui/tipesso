@@ -1,12 +1,20 @@
 (ns tipesso.core
-  (:require [clojure.data.json :as json]
+  (:require [clojure.contrib.djui.coll :refer [deep-merge to-sequence tree-seq+]]
+            [clojure.contrib.djui.core :refer [ignorantly]]
+            [clojure.contrib.djui.str :refer [safe-parse]]
+            [clojure.string :refer [trim]]
+            [taoensso.timbre :as timbre :refer (trace debug info)]
             [tipesso.provider.github :as github]
             [tipesso.provider.clojars :as clojars]
             [tipesso.provider.leiningen :as leiningen]
-            [tipesso.provider.gittip :as gittip])
-  (:use [clojure.contrib.djui.coll :only [to-sequence tree-seq+]]
-        [clojure.string :only [trim]]))
+            [tipesso.provider.gittip :as gittip]))
 
+
+(def config
+  "Read the configuration file and make it globally available."
+  (let [default-conf (safe-parse (slurp "config.default.clj"))
+        user-conf (safe-parse (or (ignorantly (slurp "config.clj") "{}")))]
+    (deep-merge default-conf user-conf)))
 
 (defn- extract
   "Traverse tip-tree and filter tippables."
@@ -28,10 +36,10 @@
   provider calls will be slow web api calls."
   [root providers & [opts]]
   (letfn [(first-responder [in-data provider]
-            (let [;;_ (prn '<< (:name (meta provider)) in-data) ; debug only!
-                  out-data (to-sequence (provider in-data))
-                  ;;_ (prn '>> (:name (meta provider)) out-data) ; debug only!
-                  ]
+            (let [out-data (to-sequence (provider in-data))]
+              (if out-data
+                (debug "Discover" (:name (meta provider)) in-data out-data)
+                (trace "Discover" (:name (meta provider)) in-data out-data))
               out-data))
           (branch? [node] (not (nil? node)))
           (children [node] (some #(first-responder node %) providers))]
@@ -46,7 +54,8 @@
                      (with-meta clojars/handler   {:name "clojars"})
                      (with-meta gittip/handler    {:name "gittip"})]))
   ([uri providers] ;; For testing
-     (let [data {:url (trim uri)}
-           tip-tree (discover data providers {:limit 6 :parallel? false})
+     (info "New request" uri)
+     (let [data {:url (and uri (trim uri))}
+           tip-tree (discover data providers {:limit 6})
            tippables (extract tip-tree)]
-       (json/write-str tippables))))
+       tippables)))

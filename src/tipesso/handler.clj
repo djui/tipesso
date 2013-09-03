@@ -1,10 +1,11 @@
 (ns tipesso.handler
-  (:use environ.core
-        compojure.core
-        [ring.adapter.jetty :only [run-jetty]])
-  (:require [compojure.handler :as handler]
+  (:use compojure.core)
+  (:require [clojure.data.json :as json]
+            [compojure.handler :as handler]
             [compojure.route :as route]
-            [tipesso.core :as tipesso]
+            [tipesso.core :refer [tippables]]
+            [ring.adapter.jetty :refer [run-jetty]]
+            [ring.middleware.json :as middleware]
             [ring.util.response :as response])
   (:gen-class))
 
@@ -12,16 +13,20 @@
   (GET "/" []
        (let [res (response/resource-response "index.html" {:root "public"})]
          (response/content-type res "text/html")))
-  (GET "/project*" {{uri "name"} :query-params} (tipesso/tippables uri))
+  (GET "/project*" {{uri "name"} :query-params}
+       (let [res (tippables uri)]
+         {:body res}))
   (route/resources "/")
   (route/not-found "Not Found"))
 
 (def app
-  (handler/site app-routes))
+  (-> (handler/api app-routes)
+      (middleware/wrap-json-body)
+      (middleware/wrap-json-params)
+      (middleware/wrap-json-response)))
 
 (defn start [port]
   (run-jetty app {:port port :join? false}))
 
 (defn -main []
-  (let [port (Integer/parseInt (:port env "8080"))]
-    (start port)))
+  (start 8080))

@@ -1,0 +1,4 @@
+{:timbre/current-level :debug
+ :port 8080
+ :discover/provider/github/api-key "********"
+ :discover/depth 6}
