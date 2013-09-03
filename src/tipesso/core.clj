@@ -56,6 +56,6 @@
   ([uri providers] ;; For testing
      (info "New request" uri)
      (let [data {:url (and uri (trim uri))}
-           tip-tree (discover data providers {:limit 6})
+           tip-tree (discover data providers {:limit 3})
            tippables (extract tip-tree)]
        tippables)))
