@@ -11,6 +11,7 @@
                  [org.clojure/data.xml "0.0.7"]
                  [tentacles "0.2.6"]
                  [ring/ring-core "1.2.0"]
+                 [ring/ring-jetty-adapter "1.1.0"]
                  [ring/ring-json "0.2.0"]
                  [xenopath "0.1.1"]]
   :plugins [[lein-ring "0.8.3"]]
